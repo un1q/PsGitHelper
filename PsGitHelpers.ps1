@@ -62,6 +62,25 @@ Function Git-Add {
     }
 }
 
+Function Git-Diff {
+    Param(
+        [parameter(ValueFromPipelineByPropertyName)] [System.IO.FileInfo[]]$File,
+        [parameter(ValueFromPipeline)] [String[]]$FilePath,
+        [parameter(ValueFromRemainingArguments)] [String]$otherArgs
+    )
+    Begin {
+        pwd | % { [IO.Directory ]::SetCurrentDirectory($_.path) }
+    }
+    Process {
+        if ($File) {
+            $p = $File.FullName
+        } else {
+            $p = $FilePath
+        }
+        git diff $otherArgs $p
+    }
+}
+
 Function Git-Log {
     Param(
         [parameter(Mandatory=$false)][Switch] $Pretty,
