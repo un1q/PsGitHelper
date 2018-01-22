@@ -17,7 +17,7 @@ Function Git-Status {
         [parameter(ValueFromRemainingArguments)][String]$args
     )
     Begin {
-        $__index=1
+        $__index=0
     }
     Process {
         git status -s $args | % {
@@ -90,7 +90,7 @@ Function Git-Log {
         if ($Pretty) {
             git log --oneline --graph --decorate $Args
         } else {
-            $__index = 1
+            $__index = 0
             git log --pretty=format:"%h %ad %s" --date=short $Args | % {
                 [PSCustomObject]@{
                     Id  = $__index++;
