@@ -105,10 +105,22 @@ Function Git-Log {
 
 Function Git-Commit {
     Param(
-        [parameter(ValueFromRemainingArguments)][String] $Args
+        [parameter(ValueFromRemainingArguments)][String[]] $Args,
+        [parameter(Mandatory=$false)][Alias("M")][String] $Message,
+        [parameter(Mandatory=$false)][Switch] $Amend
     )
     Begin {
-        git commit $Args
+        if (!$Args) {
+            $Args = @()
+        }
+        if ($Message) {
+            $Args += "-m"
+            $Args += $Message
+        }
+        if ($Amend) {
+            $Args += "--amend"
+        }
+        &git commit $Args
     }
 }
 
@@ -153,6 +165,26 @@ Function Git-Diff-Tree {
             $Args += "-r"
         }
         &git diff-tree $Hash $Args
+    }
+}
+
+Function Git-Rebase {
+    Param (
+        [parameter(ValueFromPipelineByPropertyName)][String] $Hash,
+        [parameter(Mandatory=$false)][Alias("I")][Switch] $Interactive,
+        [parameter(ValueFromRemainingArguments)][String[]] $Args
+    )
+    Begin {
+        pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
+    }
+    Process {
+        if (!$Args) {
+            $Args = @()
+        }
+        if ($Interactive) {
+            $Args += "-i"
+        }
+        &git rebase $Hash $Args
     }
 }
 "Git helper commandlets added"
