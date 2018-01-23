@@ -5,7 +5,7 @@ Powershell scripts for git. All it does, is parsing git output into c# objects.
 
 Because I'd like to do this:
 
-``
+```
 Git-Status | Select-Object -Index 0 | Git-Add ; Git-Commit -m 'awsome change'
 ```
 
