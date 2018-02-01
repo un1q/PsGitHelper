@@ -20,3 +20,9 @@ or this:
 ```
 Git-Log -20 | Select-Object -Index 8 | Git-Rebase -i
 ```
+
+or this:
+
+```
+Git-Log -5 | Git-Diff-Tree -NamesOnly -r | Sort-Object -Unique
+```
