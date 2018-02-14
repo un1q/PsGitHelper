@@ -14,13 +14,16 @@ Function String-To-FileInfo {
 Function Git-Status {
     Param(
         [parameter(Mandatory=$false)][Int[]]$idFilter,
-        [parameter(ValueFromRemainingArguments)][String]$args
+        [parameter(ValueFromRemainingArguments)][String[]]$args
     )
     Begin {
         $__index=0
     }
     Process {
-        git status -s $args | % {
+        if (!$args) {
+            $args = @()
+        }
+        &git status -s $args | % {
             if (!$idFilter -or $__index -in $idFilter) {
                 if ($_ -match '^(.*)->(.*)$') {
                     $fileOrigin = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$1')
@@ -187,4 +190,39 @@ Function Git-Rebase {
         &git rebase $Hash $Args
     }
 }
+
+Function Git-Checkout {
+    Param (
+        [parameter(ValueFromPipelineByPropertyName)] [System.IO.FileInfo[]]$File,
+        [parameter(Mandatory=$false)][Alias("b")][String] $Branch,
+        [parameter(Mandatory=$false)][String] $Path,
+        [parameter(ValueFromRemainingArguments)][String[]] $Args
+    )
+    Begin {
+        if ($File -and $Path){
+            Write-Error -Message "Gir-Checkout needs files in pipeline OR file in Path argument - not both!"
+            exit
+        }
+        pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
+    }
+    Process {
+        if (!$Args) {
+            $Args = @()
+        }
+        if ($Branch) {
+            $Args += "-b"
+            $Args += $Branch
+        }
+        if ($File) {
+            $Args += "--"
+            $Args += $File.FullName
+        }
+        if ($Path){
+            $Args += "--"
+            $Args += $Path
+        }
+        &git checkout $Args
+    }
+}
+
 "Git helper commandlets added"
