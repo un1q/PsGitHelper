@@ -2,6 +2,9 @@ Function String-To-FileInfo {
     Param(
         [parameter(ValueFromPipeline)][String] $Path
     )
+    Begin {
+        pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
+    }
     Process {
         if ($Path -match '^.. \".*\"$') {
             [System.IO.FileInfo]($Path -replace '^.. "(.*)"$','$1')
@@ -13,10 +16,10 @@ Function String-To-FileInfo {
 
 Function Git-Status {
     Param(
-        [parameter(Mandatory=$false)][Int[]]$idFilter,
         [parameter(ValueFromRemainingArguments)][String[]]$args
     )
     Begin {
+        pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
         $__index=0
     }
     Process {
@@ -24,22 +27,20 @@ Function Git-Status {
             $args = @()
         }
         &git status -s $args | % {
-            if (!$idFilter -or $__index -in $idFilter) {
-                if ($_ -match '^(.*)->(.*)$') {
-                    $fileOrigin = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$1')
-                    $file = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$2')
-                } else {
-                    $file = String-To-FileInfo $_
-                    $fileOrigin = ""
-                }
-                [PSCustomObject]@{
-                    Id=$__index
-                    Index=$_ -replace "^(.). (.*)$",'$1'
-                    WorkTree=$_ -replace "^.(.) (.*)$",'$1'
-                    #filePath=$fp
-                    FileOrigin = $fileOrigin
-                    File = $file
-                }
+            if ($_ -match '^(.*)->(.*)$') {
+                $fileOrigin = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$1')
+                $file = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$2')
+            } else {
+                $file = String-To-FileInfo $_
+                $fileOrigin = ""
+            }
+            [PSCustomObject]@{
+                Id=$__index
+                Index=$_ -replace "^(.). (.*)$",'$1'
+                WorkTree=$_ -replace "^.(.) (.*)$",'$1'
+                #filePath=$fp
+                FileOrigin = $fileOrigin
+                File = $file
             }
             $__index++
         }
@@ -113,6 +114,7 @@ Function Git-Commit {
         [parameter(Mandatory=$false)][Switch] $Amend
     )
     Begin {
+        pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
         if (!$Args) {
             $Args = @()
         }
@@ -200,28 +202,30 @@ Function Git-Checkout {
     )
     Begin {
         if ($File -and $Path){
-            Write-Error -Message "Gir-Checkout needs files in pipeline OR file in Path argument - not both!"
+            Write-Error -Message "Git-Checkout needs files in pipeline OR file in Path argument - not both!"
             exit
         }
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
     }
     Process {
+        $GitArgs = @()
         if (!$Args) {
-            $Args = @()
+            $GitArgs += $Args
         }
         if ($Branch) {
-            $Args += "-b"
-            $Args += $Branch
+            $GitArgs += "-b"
+            $GitArgs += $Branch
         }
         if ($File) {
-            $Args += "--"
-            $Args += $File.FullName
+            $GitArgs += "--"
+            $GitArgs += $File.FullName
         }
         if ($Path){
-            $Args += "--"
-            $Args += $Path
+            $GitArgs += "--"
+            $GitArgs += $Path
         }
-        &git checkout $Args
+        ">>> $GitArgs"
+        &git checkout $GitArgs
     }
 }
 
