@@ -23,10 +23,11 @@ Function Git-Status {
         $__index=0
     }
     Process {
-        if (!$args) {
-            $args = @()
+        $GitArgs = @()
+        if (!$Args) {
+            $GitArgs += $Args
         }
-        &git status -s $args | % {
+        &git status -s $GitArgs | % {
             if ($_ -match '^(.*)->(.*)$') {
                 $fileOrigin = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$1')
                 $file = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$2')
@@ -111,21 +112,26 @@ Function Git-Commit {
     Param(
         [parameter(ValueFromRemainingArguments)][String[]] $Args,
         [parameter(Mandatory=$false)][Alias("M")][String] $Message,
+        [parameter(Mandatory=$false)][Alias("A")][Switch] $All,
         [parameter(Mandatory=$false)][Switch] $Amend
     )
     Begin {
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
+        $GitArgs = @()
         if (!$Args) {
-            $Args = @()
+            $GitArgs += $Args
         }
         if ($Message) {
-            $Args += "-m"
-            $Args += $Message
+            $GitArgs += "-m"
+            $GitArgs += $Message
         }
         if ($Amend) {
-            $Args += "--amend"
+            $GitArgs += "--amend"
         }
-        &git commit $Args
+        if ($All) {
+            $GitArgs += "--all"
+        }
+        &git commit $GitArgs
     }
 }
 
@@ -139,13 +145,14 @@ Function Git-Show {
         pwd | % { [IO.Directory ]::SetCurrentDirectory($_.path) }
     }
     Process {
+        $GitArgs = @()
         if (!$Args) {
-            $Args = @()
+            $GitArgs += $Args
         }
         if ($NamesOnly) {
-            $Args += "--name-only"
+            $GitArgs += "--name-only"
         }
-        &git show $Hash $Args
+        &git show $Hash $GitArgs
     }
 }
 
@@ -160,16 +167,17 @@ Function Git-Diff-Tree {
         pwd | % { [IO.Directory ]::SetCurrentDirectory($_.path) }
     }
     Process {
+        $GitArgs = @()
         if (!$Args) {
-            $Args = @()
+            $GitArgs += $Args
         }
         if ($NamesOnly) {
-            $Args += "--name-only"
+            $GitArgs += "--name-only"
         }
         if ($Recurency) {
-            $Args += "-r"
+            $GitArgs += "-r"
         }
-        &git diff-tree $Hash $Args
+        &git diff-tree $Hash $GitArgs
     }
 }
 
@@ -183,13 +191,14 @@ Function Git-Rebase {
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
     }
     Process {
+        $GitArgs = @()
         if (!$Args) {
-            $Args = @()
+            $GitArgs += $Args
         }
         if ($Interactive) {
-            $Args += "-i"
+            $GitArgs += "-i"
         }
-        &git rebase $Hash $Args
+        &git rebase $Hash $GitArgs
     }
 }
 
