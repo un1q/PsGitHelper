@@ -24,7 +24,7 @@ Function Git-Status {
     }
     Process {
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         &git status -s $GitArgs | % {
@@ -118,7 +118,7 @@ Function Git-Commit {
     Begin {
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         if ($Message) {
@@ -146,7 +146,7 @@ Function Git-Show {
     }
     Process {
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         if ($NamesOnly) {
@@ -168,7 +168,7 @@ Function Git-Diff-Tree {
     }
     Process {
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         if ($NamesOnly) {
@@ -192,7 +192,7 @@ Function Git-Rebase {
     }
     Process {
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         if ($Interactive) {
@@ -218,7 +218,7 @@ Function Git-Checkout {
     }
     Process {
         $GitArgs = @()
-        if (!$Args) {
+        if ($Args) {
             $GitArgs += $Args
         }
         if ($Branch) {
