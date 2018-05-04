@@ -6,10 +6,10 @@ Function String-To-FileInfo {
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
     }
     Process {
-        if ($Path -match '^.. \".*\"$') {
-            [System.IO.FileInfo]($Path -replace '^.. "(.*)"$','$1')
+        if ($Path -match '^\".*\"$') {
+            [System.IO.FileInfo]($Path -replace '^"(.*)"$','$1')
         } else {
-            [System.IO.FileInfo]($Path -replace '^.. (.*)$','$1')
+            [System.IO.FileInfo]($Path -replace '^(.*)$','$1')
         }
     }
 }
@@ -28,11 +28,11 @@ Function Git-Status {
             $GitArgs += $Args
         }
         &git status -s $GitArgs | % {
-            if ($_ -match '^(.*)->(.*)$') {
-                $fileOrigin = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$1')
-                $file = String-To-FileInfo ($_ -replace '^(.*)->(.*)$','$2')
+            if ($_ -match '^.. (.*)->(.*)$') {
+                $fileOrigin = String-To-FileInfo ($_ -replace '^.. (.*)->(.*)$','$1')
+                $file = String-To-FileInfo ($_ -replace '^.. (.*)->(.*)$','$2')
             } else {
-                $file = String-To-FileInfo $_
+                $file = String-To-FileInfo ($_ -replace '^.. (.*)','$1')
                 $fileOrigin = ""
             }
             [PSCustomObject]@{
