@@ -71,7 +71,9 @@ Function Git-Diff {
     Param(
         [parameter(ValueFromPipelineByPropertyName)] [System.IO.FileInfo[]]$File,
         [parameter(ValueFromPipeline)] [String[]]$FilePath,
-        [parameter(ValueFromRemainingArguments)] [String]$otherArgs
+        [parameter(ValueFromPipelineByPropertyName, Mandatory=$false)] [String]$Commit,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory=$false)] [String]$Commit2,
+        [parameter(ValueFromRemainingArguments)] [String]$OtherArgs
     )
     Begin {
         pwd | % { [IO.Directory ]::SetCurrentDirectory($_.path) }
@@ -82,13 +84,24 @@ Function Git-Diff {
         } else {
             $p = $FilePath
         }
-        git diff $otherArgs $p
+        $GitArgs = @()
+        if ($OtherArgs) {
+            $GitArgs += $OtherArgs
+        }
+        if ($Commit) {
+            $GitArgs += $Commit
+        }
+        if ($Commit2) {
+            $GitArgs += $Commit2
+        }
+        &git diff $GitArgs -- $p
     }
 }
 
 Function Git-Log {
     Param(
         [parameter(Mandatory=$false)][Switch] $Pretty,
+        [parameter(Mandatory=$false)][Switch] $AsRange,
         [parameter(ValueFromRemainingArguments)][String] $Args
     )
     Process {
@@ -96,13 +109,23 @@ Function Git-Log {
             git log --oneline --graph --decorate $Args
         } else {
             $__index = 0
-            git log --pretty=format:"%h %ad %s" --date=short $Args | % {
-                [PSCustomObject]@{
-                    Id  = $__index++;
-                    Hash=$_ -replace "^([^\s]+) ([^\s]+) (.*)$",'$1';
-                    Date=$_ -replace "^([^\s]+) ([^\s]+) (.*)$",'$2';
-                    Desc=$_ -replace "^([^\s]+) ([^\s]+) (.*)$",'$3'
-                }
+            git log --pretty=format:"%h %p %ad %s" --date=short $Args | % {
+                if ($AsRange) {
+                    [PSCustomObject]@{
+                        Id  = $__index++;
+                        Commit =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
+                        Commit2=$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$2';
+                        Date   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$3';
+                        Desc   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4'
+                    }
+                } else {
+                    [PSCustomObject]@{
+                        Id  = $__index++;
+                        Commit =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
+                        Date   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$3';
+                        Desc   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4'
+                    }
+               }
             }
         }
     }
@@ -137,7 +160,7 @@ Function Git-Commit {
 
 Function Git-Show {
     Param(
-        [parameter(ValueFromPipelineByPropertyName)][String] $Hash,
+        [parameter(ValueFromPipelineByPropertyName)][String] $Commit,
         [parameter(Mandatory=$false)][Switch] $NamesOnly,
         [parameter(ValueFromRemainingArguments)][String[]] $Args
     )
@@ -152,13 +175,13 @@ Function Git-Show {
         if ($NamesOnly) {
             $GitArgs += "--name-only"
         }
-        &git show $Hash $GitArgs
+        &git show $Commit $GitArgs
     }
 }
 
 Function Git-Diff-Tree {
     Param(
-        [parameter(ValueFromPipelineByPropertyName)][String] $Hash,
+        [parameter(ValueFromPipelineByPropertyName)][String] $Commit,
         [parameter(Mandatory=$false)][Switch] $NamesOnly,
         [parameter(Mandatory=$false)][Alias("R")][Switch] $Recurency,
         [parameter(ValueFromRemainingArguments)][String[]] $Args
@@ -177,13 +200,13 @@ Function Git-Diff-Tree {
         if ($Recurency) {
             $GitArgs += "-r"
         }
-        &git diff-tree $Hash $GitArgs
+        &git diff-tree $Commit $GitArgs
     }
 }
 
 Function Git-Rebase {
     Param (
-        [parameter(ValueFromPipelineByPropertyName)][String] $Hash,
+        [parameter(ValueFromPipelineByPropertyName)][String] $Commit,
         [parameter(Mandatory=$false)][Alias("I")][Switch] $Interactive,
         [parameter(ValueFromRemainingArguments)][String[]] $Args
     )
@@ -198,7 +221,7 @@ Function Git-Rebase {
         if ($Interactive) {
             $GitArgs += "-i"
         }
-        &git rebase $Hash $GitArgs
+        &git rebase $Commit $GitArgs
     }
 }
 
