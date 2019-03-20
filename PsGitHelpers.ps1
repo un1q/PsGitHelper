@@ -102,12 +102,15 @@ Function Git-Diff {
 Function Git-Log {
     Param(
         [parameter(Mandatory=$false)][Switch] $Pretty,
+        [parameter(Mandatory=$false)][Switch] $PrettyString,
         [parameter(Mandatory=$false)][Switch] $AsRange,
         [parameter(ValueFromRemainingArguments)][String] $Args
     )
     Process {
-        if ($Pretty) {
+        if ($PrettyString) {
             (git log --oneline --graph --decorate $Args)
+        } elseif ($Pretty) {
+            git log --oneline --graph --decorate $Args
         } else {
             $__index = 0
             git log --pretty=format:"%h %p %ad %s" --date=short $Args | % {
