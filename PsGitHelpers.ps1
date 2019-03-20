@@ -107,7 +107,7 @@ Function Git-Log {
     )
     Process {
         if ($Pretty) {
-            git log --oneline --graph --decorate $Args
+            (git log --oneline --graph --decorate $Args)
         } else {
             $__index = 0
             git log --pretty=format:"%h %p %ad %s" --date=short $Args | % {
