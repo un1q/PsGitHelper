@@ -70,7 +70,8 @@ Function Git-Add {
 Function Git-Diff {
     Param(
         [parameter(ValueFromPipelineByPropertyName)] [System.IO.FileInfo[]]$File,
-        [parameter(ValueFromPipeline)] [String[]]$FilePath,
+        [parameter(Mandatory=$false)] [Switch]$PathsFromPipeline,
+        [parameter(ValueFromPipeline)] [String[]]$_PathsFromPipeline,
         [parameter(ValueFromPipelineByPropertyName, Mandatory=$false)] [String]$Commit,
         [parameter(ValueFromPipelineByPropertyName, Mandatory=$false)] [String]$Commit2,
         [parameter(ValueFromRemainingArguments)] [String]$OtherArgs
@@ -81,8 +82,8 @@ Function Git-Diff {
     Process {
         if ($File) {
             $p = $File.FullName
-        } else {
-            $p = $FilePath
+        } elseif ($PathsFromPipeline) {
+            $p = $_PathsFromPipeline
         }
         $GitArgs = @()
         if ($OtherArgs) {
