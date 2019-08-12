@@ -104,10 +104,21 @@ Function Git-Log {
         [parameter(Mandatory=$false)][Switch] $Pretty,
         [parameter(Mandatory=$false)][Switch] $PrettyString,
         [parameter(Mandatory=$false)][Switch] $AsRange,
+        [parameter(Mandatory=$false)][Switch] $AsOneRange,
         [parameter(ValueFromRemainingArguments)][String] $Args
     )
     Process {
-        if ($PrettyString) {
+        if ($AsOneRange) {
+            $logs = git log --pretty=format:"%h %p %ad %s" --date=short $Args
+            [PSCustomObject]@{
+                Id  = 0;
+                Commit =  $logs[0]              -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
+                Commit2=  $logs[$logs.Count-1]  -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$2';
+                Desc   = ($logs[0]              -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4') +
+                          ' .. ' +
+                         ($logs[$logs.Count-1] -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4');
+            }
+        } elseif ($PrettyString) {
             (git log --oneline --graph --decorate $Args)
         } elseif ($Pretty) {
             git log --oneline --graph --decorate $Args
