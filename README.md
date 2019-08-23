@@ -4,7 +4,7 @@ All it does, is parsing git output into .NET objects and also it can use those o
 
 ## Why?
 
-One of the most neat feature of powershell is that you can send whole objects through pipeline.
+One of the most neat feature of powershell is that you can send whole objects through pipeline. Those commandlets exploits this feature.
 
 Examples:
 
