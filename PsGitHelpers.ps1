@@ -89,11 +89,11 @@ Function Git-Diff {
         if ($OtherArgs) {
             $GitArgs += $OtherArgs
         }
-        if ($Commit) {
-            $GitArgs += $Commit
-        }
         if ($Commit2) {
             $GitArgs += $Commit2
+        }
+        if ($Commit) {
+            $GitArgs += $Commit
         }
         &git diff $GitArgs -- $p
     }
