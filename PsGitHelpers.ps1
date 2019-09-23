@@ -108,15 +108,22 @@ Function Git-Log {
         [parameter(ValueFromRemainingArguments)][String] $Args
     )
     Process {
+        $format = "%h %p %ad @@@@%an@@@@ %s"
+        $regexPattern = "^([^\s]+) ([^\s]+) ([^\s]+) @@@@(.*)@@@@ (.*)$"
+        $regexCommit1 = '$1'
+        $regexCommit2 = '$2'
+        $regexDate    = '$3'
+        $regexAuthor  = '$4'
+        $regexDesc    = '$5'
         if ($AsOneRange) {
-            $logs = git log --pretty=format:"%h %p %ad %s" --date=short $Args
+            $logs = git log --pretty=format:$format --date=short $Args
             [PSCustomObject]@{
                 Id  = 0;
-                Commit =  $logs[0]              -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
-                Commit2=  $logs[$logs.Count-1]  -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$2';
-                Desc   = ($logs[0]              -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4') +
+                Commit =  $logs[0]              -replace $regexPattern,$regexCommit1;
+                Commit2=  $logs[$logs.Count-1]  -replace $regexPattern,$regexCommit2;
+                Desc   = ($logs[0]              -replace $regexPattern,$regexDesc) +
                           ' .. ' +
-                         ($logs[$logs.Count-1] -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4');
+                         ($logs[$logs.Count-1]  -replace $regexPattern,$regexDesc);
             }
         } elseif ($PrettyString) {
             (git log --oneline --graph --decorate $Args)
@@ -124,21 +131,23 @@ Function Git-Log {
             git log --oneline --graph --decorate $Args
         } else {
             $__index = 0
-            git log --pretty=format:"%h %p %ad %s" --date=short $Args | % {
+            git log --pretty=format:$format --date=short $Args | % {
                 if ($AsRange) {
                     [PSCustomObject]@{
                         Id  = $__index++;
-                        Commit =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
-                        Commit2=$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$2';
-                        Date   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$3';
-                        Desc   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4'
+                        Commit =$_ -replace $regexPattern,$regexCommit1;
+                        Commit2=$_ -replace $regexPattern,$regexCommit2;
+                        Date   =$_ -replace $regexPattern,$regexDate;
+                        Author =$_ -replace $regexPattern,$regexAuthor;
+                        Desc   =$_ -replace $regexPattern,$regexDesc
                     }
                 } else {
                     [PSCustomObject]@{
                         Id  = $__index++;
-                        Commit =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$1';
-                        Date   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$3';
-                        Desc   =$_ -replace "^([^\s]+) ([^\s]+) ([^\s]+) (.*)$",'$4'
+                        Commit =$_ -replace $regexPattern,$regexCommit1;
+                        Date   =$_ -replace $regexPattern,$regexDate;
+                        Author =$_ -replace $regexPattern,$regexAuthor;
+                        Desc   =$_ -replace $regexPattern,$regexDesc
                     }
                }
             }
