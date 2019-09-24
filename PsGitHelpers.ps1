@@ -108,8 +108,8 @@ Function Git-Log {
         [parameter(ValueFromRemainingArguments)][String] $Args
     )
     Process {
-        $format = "%h %p %ad @@@@%an@@@@ %s"
-        $regexPattern = "^([^\s]+) ([^\s]+) ([^\s]+) @@@@(.*)@@@@ (.*)$"
+        $format = "H%hH P%pP D%adD @@@@%an@@@@ %s"
+        $regexPattern = "^H([^H]+)H P([^P]+)P D([^D]+)D @@@@(.*)@@@@ (.*)$"
         $regexCommit1 = '$1'
         $regexCommit2 = '$2'
         $regexDate    = '$3'
