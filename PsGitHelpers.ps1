@@ -6,8 +6,8 @@ Function String-To-FileInfo {
         pwd | % { [IO.Directory]::SetCurrentDirectory($_.path) }
     }
     Process {
-        if ($Path -match '^\".*\"$') {
-            [System.IO.FileInfo]($Path -replace '^"(.*)"$','$1')
+        if ($Path -match '^ *\".*\" *$') {
+            [System.IO.FileInfo]($Path -replace '^ *"(.*)" *$','$1')
         } else {
             [System.IO.FileInfo]($Path -replace '^(.*)$','$1')
         }
